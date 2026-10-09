@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Air Quality Trend Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f5f2;--ink:#14211c;--mut:#566660;--card:#fff;--line:#d5ddd8;--g:#1f9d55;--s:#8cc63f;--m:#f2c500;--p:#f39237;--v:#e2453c;--sv:#8b1a1a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a16;--ink:#e8efeb;--mut:#9db0a8;--card:#18261f;--line:#2b3d34}}
+:root[data-theme="dark"]{--bg:#0f1a16;--ink:#e8efeb;--mut:#9db0a8;--card:#18261f;--line:#2b3d34}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "IBM Plex Sans",system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:20px 16px 48px}
+h1,h2{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.1;margin:0}
+h1{font-size:clamp(30px,8vw,46px)}
+h2{font-size:22px;margin-bottom:6px}
+p{margin:6px 0 14px;max-width:62ch}
+.mut{color:var(--mut);font-size:14px}
+section{margin-top:40px}
+.strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(14px,1fr));gap:3px;margin:16px 0 10px}
+.strip i{aspect-ratio:1;border-radius:2px;display:block}
+.leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px}
+.leg b{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+label{font-weight:500;display:block;margin-bottom:6px}
+input{font:inherit;width:100%;max-width:200px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+input:focus-visible{outline:3px solid var(--g);outline-offset:1px}
+#res{margin-top:14px;padding:12px 14px;border-left:8px solid var(--line);border-radius:4px;background:var(--bg)}
+#res strong{font-family:"Bricolage Grotesque",sans-serif;font-size:20px}
+.bar{display:grid;grid-template-columns:104px 1fr 56px;align-items:center;gap:10px;margin:9px 0;font-size:14px}
+.bar span:last-child{text-align:right;font-weight:500}
+.track{height:18px;background:var(--line);border-radius:3px;overflow:hidden}
+.track div{height:100%;border-radius:3px}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:420px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+footer{margin-top:44px;font-size:13px;color:var(--mut)}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>Air Quality Trend Explorer</h1>
+<p>What public data says about air pollution in India, built from open reports instead of a survey. Delhi's winter shows it most clearly.</p>
+</header>
+
+<section aria-labelledby="h-days">
+<h2 id="h-days">Delhi, winter 2025-26: 151 days</h2>
+<p class="mut">Each square is one day, grouped by its PM2.5 air quality category (1 Oct 2025 to 28 Feb 2026).</p>
+<div class="strip" id="strip" role="img" aria-label="151 squares: 18 Severe, 87 Very Poor, 24 Poor, 15 Moderate, 6 Satisfactory, 1 Good"></div>
+<div class="leg" id="leg"></div>
+<p style="margin-top:14px">129 of 151 days were Poor or worse. Only 1 day was Good.</p>
+</section>
+
+<section aria-labelledby="h-chk">
+<h2 id="h-chk">Check a PM2.5 reading</h2>
+<div class="card">
+<label for="pm">PM2.5 in µg/m³</label>
+<input id="pm" type="number" min="0" max="1000" inputmode="decimal" placeholder="e.g. 163">
+<div id="res" aria-live="polite">Enter a reading to see its category and advice.</div>
+</div>
+</section>
+
+<section aria-labelledby="h-sea">
+<h2 id="h-sea">The same city, three seasons</h2>
+<p class="mut">Delhi average PM2.5 (µg/m³). The WHO annual guideline is 5.</p>
+<div id="sea"></div>
+</section>
+
+<section aria-labelledby="h-cmp">
+<h2 id="h-cmp">Annual averages in 2025</h2>
+<p class="mut">PM2.5 in µg/m³ against the WHO guideline.</p>
+<div id="cmp"></div>
+</section>
+
+<section aria-labelledby="h-adv">
+<h2 id="h-adv">What each category means</h2>
+<div class="card tbl"><table id="tbl"><thead><tr><th>Category</th><th>PM2.5 (µg/m³)</th><th>Suggested action</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<footer>
+<p><b>Sources:</b> IQAir, World Air Quality Report 2025; CREA, Winter 2025-26 Ambient Air Quality Snapshot (CPCB data); CREA monthly snapshots for July and September 2025. Category ranges follow the CPCB national AQI.</p>
+<p><b>Limits:</b> This page shows a fixed snapshot of published figures. It is not live and does not forecast. Advice is general, not medical.</p>
+</footer>
+</main>
+<script>
+var C=[
+{n:"Good",lo:0,hi:30,c:"var(--g)",d:1,a:"Enjoy normal outdoor activity."},
+{n:"Satisfactory",lo:31,hi:60,c:"var(--s)",d:6,a:"Unusually sensitive people should take it easier outdoors."},
+{n:"Moderate",lo:61,hi:90,c:"var(--m)",d:15,a:"People with lung or heart conditions should reduce long exertion."},
+{n:"Poor",lo:91,hi:120,c:"var(--p)",d:24,a:"Limit prolonged outdoor effort; sensitive groups stay indoors."},
+{n:"Very Poor",lo:121,hi:250,c:"var(--v)",d:87,a:"Avoid outdoor exercise. Wear a fitted N95 mask if you must go out."},
+{n:"Severe",lo:251,hi:9999,c:"var(--sv)",d:18,a:"Stay indoors, keep windows shut, and avoid all outdoor exertion."}];
+var s=document.getElementById("strip"),l=document.getElementById("leg"),t="",k="";
+for(var i=C.length-1;i>=0;i--){var x=C[i];for(var j=0;j<x.d;j++)t+='<i style="background:'+x.c+'"></i>';
+k+='<span><b style="background:'+x.c+'"></b>'+x.n+' '+x.d+'</span>';}
+s.innerHTML=t;l.innerHTML=k;
+function bars(id,rows,max){var h="";rows.forEach(function(r){h+='<div class="bar"><span>'+r[0]+'</span><div class="track"><div style="width:'+(r[1]/max*100)+'%;background:'+r[2]+'"></div></div><span>'+r[1]+'</span></div>';});document.getElementById(id).innerHTML=h;}
+bars("sea",[["Jul 2025",29,"var(--g)"],["Sep 2025",36,"var(--s)"],["Winter 2025-26",163,"var(--v)"]],170);
+bars("cmp",[["WHO guideline",5,"var(--g)"],["India average",48.9,"var(--m)"],["New Delhi",82.2,"var(--p)"],["Loni (highest)",112.5,"var(--v)"]],120);
+var b="";C.forEach(function(x){b+='<tr><td><b style="display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:7px;background:'+x.c+'"></b>'+x.n+'</td><td>'+x.lo+(x.hi>9000?'+':'-'+x.hi)+'</td><td>'+x.a+'</td></tr>';});
+document.querySelector("#tbl tbody").innerHTML=b;
+document.getElementById("pm").addEventListener("input",function(e){
+var v=parseFloat(e.target.value),r=document.getElementById("res");
+if(isNaN(v)||v<0){r.style.borderLeftColor="var(--line)";r.textContent="Enter a reading to see its category and advice.";return;}
+var x=C.filter(function(q){return v>=q.lo&&v<=q.hi||(q.hi<9000&&v>q.hi&&v<q.hi+1&&q.n!=="Severe"&&false)})[0]||C[v<31?0:C.length-1];
+if(v>x.hi&&x.hi<9000){for(var i=0;i<C.length;i++){if(v<=C[i].hi){x=C[i];break;}}}
+r.style.borderLeftColor=x.c;
+r.innerHTML="<strong>"+x.n+"</strong><br>"+x.a;});
+</script>
+</body>
+</html>
